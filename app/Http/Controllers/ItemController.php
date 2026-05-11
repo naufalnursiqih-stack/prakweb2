@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Item
+use App\Models\Item;
 
 class ItemController extends Controller
 {
@@ -30,6 +30,8 @@ class ItemController extends Controller
     public function destroy($id)
     {
         Item::destroy($id);
-        return response()->json(null, 204);
+        return response()->json([
+            'message' => 'Item deleted successfully'
+        ], 200);
     }
 }
