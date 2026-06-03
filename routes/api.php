@@ -1,16 +1,20 @@
 <?php
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\ItemController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ItemController;
 use App\Http\Controllers\CategoryController;
 
-Route::get('/contoh', function () {
-    return response()->json([
-        'Nama' => 'Pares',
-        'Nim' => '60200124069',
-        'kelas' => 'A'
-    ]);
+// Rute Publik (Otomatis menjadi api/v1/register)
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
+
+// Rute Terproteksi Token
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::apiResource('categories', CategoryController::class)->except(['destroy']);
+    Route::delete('categories/{category}', [CategoryController::class, 'destroy'])->middleware('role:admin');
+
+    Route::apiResource('items', ItemController::class)->except(['destroy']);
+    Route::delete('items/{item}', [ItemController::class, 'destroy'])->middleware('role:admin');
 });
-Route::apiResource('categories', CategoryController::class);
-Route::apiResource('items', ItemController::class);
