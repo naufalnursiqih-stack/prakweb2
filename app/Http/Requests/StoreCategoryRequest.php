@@ -2,25 +2,32 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCategoryRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    public function authorize()
+    {
+        return true;
+    }
+
+    protected function prepareForValidation()
+    {
+        $inputs = $this->all();
+
+        foreach ($inputs as $key => $value) {
+            if (is_string($value)) {
+                $inputs[$key] = strip_tags(trim($value));
+            }
+        }
+
+        $this->merge($inputs);
+    }
+
     public function rules()
     {
         return [
-            'name' => 'required|string|unique:categories,name',
-        ];
-    }
-
-    public function messages()
-    {
-        return [
-            'name.unique' => 'Nama kategori sudah ada.',
+            'name' => 'required|string|unique:categories,name'
         ];
     }
 }

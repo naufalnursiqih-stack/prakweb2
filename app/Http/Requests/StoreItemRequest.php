@@ -13,32 +13,23 @@ class StoreItemRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        $input = $this->all();
+        $inputs = $this->all();
 
-        array_walk($input, function (&$val) {
-            if (is_string($val)) {
-                $val = trim(strip_tags($val));
+        foreach ($inputs as $key => $value) {
+            if (is_string($value)) {
+                $inputs[$key] = strip_tags(trim($value));
             }
-        });
+        }
 
-        $this->merge($input);
+        $this->merge($inputs);
     }
 
     public function rules()
     {
         return [
-            "name"        => "required|string|max:255",
-            "quantity"    => "required|integer|min:0",
-            "price"       => "required|numeric|min:0",
-            "category_id" => "required|exists:categories,id",
-        ];
-    }
-
-    public function messages()
-    {
-        return [
-            "name.required" => "Nama item wajib diisi.",
-            // ...
+            'name' => 'required|string',
+            'category_id' => 'required|exists:categories,id',
+            'price' => 'required|numeric'
         ];
     }
 }

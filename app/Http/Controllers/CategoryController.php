@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\CategoryService;
+use App\Http\Controllers\Api\BaseController;
+use App\Models\Category;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
-use App\Http\Controllers\Api\BaseController;
 
 class CategoryController extends BaseController
 {
@@ -18,38 +18,36 @@ class CategoryController extends BaseController
 
     public function index()
     {
-        return $this->success($this->svc->all());
+        $categories = Category::all();
+        return $this->success($categories, 'Categories retrieved successfully.');
     }
 
-    public function store(StoreCategoryRequest $req)
+    public function store(StoreCategoryRequest $request)
     {
-        $cat = $this->svc->create($req->validated());
-
-        return $this->success($cat, "Kategori dibuat", 201);
+        $category = Category::create($request->validated());
+        return $this->success($category, 'Category created successfully.', 201);
     }
 
     public function show($id)
     {
-        try {
-            $cat = $this->svc->find($id);
+        $category = Category::find($id);
 
-            return $this->success($cat);
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), 404);
+        if (!$category) {
+            return $this->error('Category not found.', 404);
         }
+
+        return $this->success($category, 'Category retrieved successfully.');
     }
 
-    public function update(UpdateCategoryRequest $req, $id)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $cat = $this->svc->update($id, $req->validated());
-
-        return $this->success($cat, "Kategori diperbarui");
+        $category->update($request->validated());
+        return $this->success($category, 'Category updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy(Category $category)
     {
-        $this->svc->delete($id);
-
-        return $this->success(null, "Kategori dihapus", 204);
+        $category->delete();
+        return $this->success([], 'Category deleted successfully.');
     }
 }

@@ -2,31 +2,34 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateItemRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
+    public function authorize()
+    {
+        return true;
+    }
+
+    protected function prepareForValidation()
+    {
+        $inputs = $this->all();
+
+        foreach ($inputs as $key => $value) {
+            if (is_string($value)) {
+                $inputs[$key] = strip_tags(trim($value));
+            }
+        }
+
+        $this->merge($inputs);
+    }
+
     public function rules()
     {
         return [
-            'name'        => 'sometimes|required|string|max:255',
-            'quantity'    => 'sometimes|required|integer|min:0',
-            'price'       => 'sometimes|required|numeric|min:0',
+            'name' => 'sometimes|required|string',
             'category_id' => 'sometimes|required|exists:categories,id',
-        ];
-    }
-
-    public function messages()
-    {
-        return [
-            'name.required'        => 'Field ini diperlukan saat diubah.',
-            'quantity.required'    => 'Field ini diperlukan saat diubah.',
-            'price.required'       => 'Field ini diperlukan saat diubah.',
-            'category_id.required' => 'Field ini diperlukan saat diubah.',
+            'price' => 'sometimes|required|numeric'
         ];
     }
 }

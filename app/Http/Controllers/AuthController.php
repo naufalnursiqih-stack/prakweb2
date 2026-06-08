@@ -2,67 +2,61 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Api\BaseController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
 
-class AuthController extends Controller
+class AuthController extends BaseController
 {
-    public function register(Request $req)
+    public function register(Request $request)
     {
-        $validated = $req->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users',
-            'password' => 'required|string|min:6|confirmed',
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            // role default 'user'
-        ]);
-
-        $token = $user->createToken('api-token')->plainTextToken;
-
-        return response()->json([
-            'status'  => 'success',
-            'data'    => [
-                'user'  => $user,
-                'token' => $token
-            ],
-            'message' => 'User registered'
-        ], 201);
-    }
-
-    public function login(Request $req)
-    {
-        $req->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
-        ]);
-
-        $user = User::where('email', $req->email)->first();
-
-        if (!$user || !Hash::check($req->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.']
-            ]);
+        if ($validator->fails()) {
+            return $this->error('Validation Error.', 422, $validator->errors());
         }
 
-        // Revoke old tokens
-        $user->tokens()->delete();
-
-        $token = $user->createToken('api-token')->plainTextToken;
-
-        return response()->json([
-            'status'  => 'success',
-            'data'    => [
-                'user'  => $user,
-                'token' => $token
-            ],
-            'message' => 'User logged in'
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
         ]);
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return $this->success([
+            'user' => $user,
+            'token' => $token
+        ], 'User registered successfully.', 201);
+    }
+
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|email',
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->error('Validation Error.', 422, $validator->errors());
+        }
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return $this->error('Invalid credentials.', 401);
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return $this->success([
+            'token' => $token
+        ], 'User logged in successfully.');
     }
 }
