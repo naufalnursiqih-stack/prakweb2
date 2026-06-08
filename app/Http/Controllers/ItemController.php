@@ -9,7 +9,10 @@ use App\Http\Requests\UpdateItemRequest;
 
 class ItemController extends BaseController
 {
-    public function index()
+    protected ItemService $svc;
+
+    // Inject ItemService melalui Constructor
+    public function __construct(ItemService $svc)
     {
         $items = Item::all();
         return $this->success($items, 'Items retrieved successfully.');

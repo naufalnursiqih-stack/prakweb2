@@ -9,6 +9,13 @@ use App\Http\Requests\UpdateCategoryRequest;
 
 class CategoryController extends BaseController
 {
+    protected CategoryService $svc;
+
+    public function __construct(CategoryService $svc)
+    {
+        $this->svc = $svc;
+    }
+
     public function index()
     {
         $categories = Category::all();
