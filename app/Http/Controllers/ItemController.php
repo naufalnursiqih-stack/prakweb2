@@ -2,36 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\BaseController;
 use App\Models\Item;
+use App\Http\Requests\StoreItemRequest;
+use App\Http\Requests\UpdateItemRequest;
 
-class ItemController extends Controller
+class ItemController extends BaseController
 {
     public function index()
     {
-        return response()->json(Item::with('category')->get());
+        $items = Item::all();
+        return $this->success($items, 'Items retrieved successfully.');
     }
-    public function store(Request $request)
+
+    public function store(StoreItemRequest $request)
     {
-        $item = Item::create($request->all());
-        return response()->json($item, 201);
+        $item = Item::create($request->validated());
+        return $this->success($item, 'Item created successfully.', 201);
     }
+
     public function show($id)
     {
-        $item = Item::with('category')->findOrFail($id);
-        return response()->json($item);
+        $item = Item::find($id);
+
+        if (!$item) {
+            return $this->error('Item not found.', 404);
+        }
+
+        return $this->success($item, 'Item retrieved successfully.');
     }
-    public function update(Request $request, $id)
+
+    public function update(UpdateItemRequest $request, Item $item)
     {
-        $item = Item::findOrFail($id);
-        $item->update($request->all());
-        return response()->json($item);
+        $item->update($request->validated());
+        return $this->success($item, 'Item updated successfully.');
     }
-    public function destroy($id)
+
+    public function destroy(Item $item)
     {
-        Item::destroy($id);
-        return response()->json([
-            'message' => 'Item deleted successfully'
-        ], 200);
+        $item->delete();
+        return $this->success([], 'Item deleted successfully.');
     }
 }

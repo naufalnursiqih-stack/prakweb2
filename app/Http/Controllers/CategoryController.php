@@ -2,34 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\BaseController;
 use App\Models\Category;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 
-class CategoryController extends Controller
+class CategoryController extends BaseController
 {
     public function index()
     {
-        return response()->json(Category::all());
+        $categories = Category::all();
+        return $this->success($categories, 'Categories retrieved successfully.');
     }
-    public function store(Request $request)
+
+    public function store(StoreCategoryRequest $request)
     {
-        $category = Category::create($request->all());
-        return response()->json($category, 201);
+        $category = Category::create($request->validated());
+        return $this->success($category, 'Category created successfully.', 201);
     }
+
     public function show($id)
     {
-        $category = Category::findOrFail($id);
-        return response()->json($category);
+        $category = Category::find($id);
+
+        if (!$category) {
+            return $this->error('Category not found.', 404);
+        }
+
+        return $this->success($category, 'Category retrieved successfully.');
     }
-    public function update(Request $request, $id)
+
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $category = Category::findOrFail($id);
-        $category->update($request->all());
-        return response()->json($category);
+        $category->update($request->validated());
+        return $this->success($category, 'Category updated successfully.');
     }
-    public function destroy($id)
+
+    public function destroy(Category $category)
     {
-        Category::destroy($id);
-        return response()->json(null, 204);
+        $category->delete();
+        return $this->success([], 'Category deleted successfully.');
     }
 }
