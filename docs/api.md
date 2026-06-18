@@ -8,10 +8,12 @@
 - **URL:** `/api/v1/register`
 - **Body:** `name`, `email`, `password`, `password_confirmation`
 - **Response:**
-    ```json
+  `json
     {
         "success": true,
         "message": "User registered successfully",
         "data": { "token": "1|..." }
     }
-    ```
+    `
+  GET /items?category_id={id}
+  Description: Filter items by category, optional.
