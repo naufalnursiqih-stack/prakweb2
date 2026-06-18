@@ -2,48 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use App\Services\ItemService;
 use App\Http\Controllers\Api\BaseController;
 use App\Models\Item;
-use App\Http\Requests\StoreItemRequest;
-use App\Http\Requests\UpdateItemRequest;
 
 class ItemController extends BaseController
 {
-    protected ItemService $svc;
 
-    // Inject ItemService melalui Constructor
-    public function __construct(ItemService $svc)
+    public function index(Request $request)
     {
-        $items = Item::all();
-        return $this->success($items, 'Items retrieved successfully.');
-    }
+        $query = Item::with('category');
 
-    public function store(StoreItemRequest $request)
-    {
-        $item = Item::create($request->validated());
-        return $this->success($item, 'Item created successfully.', 201);
-    }
-
-    public function show($id)
-    {
-        $item = Item::find($id);
-
-        if (!$item) {
-            return $this->error('Item not found.', 404);
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
         }
 
-        return $this->success($item, 'Item retrieved successfully.');
-    }
-
-    public function update(UpdateItemRequest $request, Item $item)
-    {
-        $item->update($request->validated());
-        return $this->success($item, 'Item updated successfully.');
-    }
-
-    public function destroy(Item $item)
-    {
-        $item->delete();
-        return $this->success([], 'Item deleted successfully.');
+        return $this->success($query->get());
     }
 }

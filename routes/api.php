@@ -6,12 +6,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\CategoryController;
 
-Route::prefix('v1')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
+// Langsung tulis rutenya tanpa bungkus prefix v1 lagi
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::apiResource('items', ItemController::class);
-        Route::apiResource('categories', CategoryController::class);
-    });
+Route::apiResource('items', ItemController::class);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('categories', CategoryController::class);
 });
