@@ -6,12 +6,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\CategoryController;
 
-// Langsung tulis rutenya tanpa bungkus prefix v1 lagi
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-
-Route::apiResource('items', ItemController::class);
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('categories', CategoryController::class);
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::get('/items', [ItemController::class, 'index']);
+    Route::post('/items', [ItemController::class, 'store']);
+    Route::put('/items/{id}', [ItemController::class, 'update']);
+    Route::delete('/items/{id}', [ItemController::class, 'destroy'])->middleware('role:admin');
 });
