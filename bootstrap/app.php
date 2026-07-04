@@ -13,15 +13,27 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Daftarkan alias middleware kustom kamu di sini
+        $middleware->api(prepend: [
+            'throttle:60,1',
+        ]);
+
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Tangkap exception dan ubah responnya menjadi JSON seragam jika request diawali dengan api/
         $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*')) {
+                // Berikan status 401 jika error-nya karena belum login (Guest)
+                if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                    return response()->json([
+                        'status' => 'error',
+                        'data' => null,
+                        'message' => 'Unauthenticated.'
+                    ], 401);
+                }
+
+                // Berikan status sesuai error, atau default 500
                 return response()->json([
                     'status' => 'error',
                     'data' => null,
